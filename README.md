@@ -11,11 +11,13 @@ A [LocalWP](https://localwp.com/) add-on that runs a per-site Elasticsearch cont
 - Publishes the container on a stable per-site `localhost` port (persisted in site data) so you can bookmark the URI in GUI clients like [Elasticvue](https://elasticvue.com/).
 - Automatically selects a native image when available (`linux/arm64` on Apple Silicon, `linux/amd64` elsewhere) and falls back gracefully when a given ES tag ships only one platform.
 - When ElasticPress is toggled on, writes a marked block to `wp-config.php`:
+
   ```php
   // BEGIN Local Elasticsearch
-  define('EP_HOST', 'http://localhost:<port>');
+  define( 'EP_HOST', 'http://localhost:<port>' );
   // END Local Elasticsearch
   ```
+
   Toggling off removes that block.
 - Stops the container on site stop or when the ES toggle is turned off. The container and its data volume are preserved; only the "Confirm" action on a major-version change removes them.
 - Stops any still-running managed containers when LocalWP itself quits.

@@ -78,7 +78,7 @@ export default function (context: LocalMain.AddonMainContext): void {
 		(async () => {
 			try {
 				const names = await listRunningContainers();
-				await Promise.all(names.map((n) => stopContainerByName(n)));
+				await Promise.allSettled(names.map((n) => stopContainerByName(n)));
 			} catch (err) {
 				console.error('[elasticsearch] shutdown stop failed:', err);
 			} finally {

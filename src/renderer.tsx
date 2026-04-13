@@ -98,8 +98,8 @@ function ElasticsearchPanel({ site, electron }: { site: SiteProps; electron: any
 
 	useEffect(() => {
 		const siteHalted = site.status === 'halted' || site.status === 'stopped';
-		if (!enabled || siteHalted || status.ready) return;
-		const id = setInterval(refresh, 2000);
+		if (!enabled || siteHalted) return;
+		const id = setInterval(refresh, status.ready ? 5000 : 2000);
 		return () => clearInterval(id);
 	}, [enabled, site.status, status.ready, refresh]);
 

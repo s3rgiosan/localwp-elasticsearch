@@ -16,7 +16,7 @@ function wpConfigPath(site: Site): string | null {
 }
 
 function buildBlock(host: string): string {
-	return `${MARKER_BEGIN}\ndefine('EP_HOST', '${host}');\n${MARKER_END}`;
+	return `${MARKER_BEGIN}\ndefine( 'EP_HOST', '${host}' );\n${MARKER_END}`;
 }
 
 function stripBlock(contents: string): string {
@@ -25,8 +25,6 @@ function stripBlock(contents: string): string {
 
 function insertBlock(contents: string, block: string): string {
 	const stripped = stripBlock(contents);
-	// Matches the default English "stop editing" marker in Local's generated wp-config.php.
-	// Localized or hardened configs fall through to the <?php-anchor branch below.
 	const marker = /\/\*\s*That's all, stop editing!/i;
 	if (marker.test(stripped)) {
 		return stripped.replace(marker, `${block}\n\n$&`);
@@ -39,11 +37,34 @@ function insertBlock(contents: string, block: string): string {
 	return `${block}\n${stripped}`;
 }
 
+function defineLineRegex(name: string): RegExp {
+	return new RegExp(`define\\s*\\(\\s*(['"])${name}\\1\\s*,\\s*[^)]*\\)\\s*;?`, 'i');
+}
+
 export async function setEpHostConstant(site: Site, hostUri: string): Promise<boolean> {
 	const file = wpConfigPath(site);
 	if (!file) return false;
 	try {
 		const contents = await fs.readFile(file, 'utf8');
+
+		// If our block exists, ensure it's current.
+		if (contents.includes(MARKER_BEGIN)) {
+			const next = contents.replace(BLOCK_RE, `\n${buildBlock(hostUri)}\n`);
+			if (next === contents) return true;
+			await fs.writeFile(file, next, 'utf8');
+			return true;
+		}
+
+		// If EP_HOST is defined outside our block, update its value in place.
+		const defRe = defineLineRegex('EP_HOST');
+		if (defRe.test(contents)) {
+			const next = contents.replace(defRe, `define( 'EP_HOST', '${hostUri}' );`);
+			if (next === contents) return true;
+			await fs.writeFile(file, next, 'utf8');
+			return true;
+		}
+
+		// Otherwise insert our marked block.
 		const next = insertBlock(contents, buildBlock(hostUri));
 		if (next === contents) return true;
 		await fs.writeFile(file, next, 'utf8');
