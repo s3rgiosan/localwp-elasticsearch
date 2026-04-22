@@ -54,7 +54,12 @@ async function execDocker(command: string): Promise<{ stdout: string; stderr: st
 	} catch (err: unknown) {
 		// Check if it's a "command not found" error
 		const error = err as any;
-		if (error?.message?.includes('not found') || error?.message?.includes('ENOENT')) {
+		if (
+			error?.code === 'ENOENT' ||
+			error?.code === 127 ||
+			/not found|ENOENT/.test(error?.message ?? '') ||
+			/not found/.test(error?.stderr ?? '')
+		) {
 			const message = `Docker executable not found. Expected at: ${DOCKER_BIN}\n` +
 				'Make sure Docker or colima is installed and accessible in PATH.';
 			throw new DockerError(message, err);
