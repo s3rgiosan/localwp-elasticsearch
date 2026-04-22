@@ -23,7 +23,7 @@ const execAsync = promisify(exec);
  * Find the docker binary path. Tries multiple common locations, especially
  * for homebrew installations on macOS (both Intel and ARM).
  */
-function getDockerBinPath(): string | null {
+function getDockerBinPath(): string {
 	// List of common docker binary locations on macOS
 	const candidates = [
 		'/opt/homebrew/bin/docker', // Apple Silicon (M1/M2/M3) homebrew
