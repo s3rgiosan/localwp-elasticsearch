@@ -25,7 +25,13 @@ A [LocalWP](https://localwp.com/) add-on that runs a per-site Elasticsearch cont
 ## Requirements
 
 - [LocalWP](https://localwp.com/) 9+
-- **Docker Desktop running on your host machine.** The add-on talks to your host's Docker daemon via the `docker` CLI — it does **not** spin up a Docker instance inside LocalWP, and it does not use any container runtime bundled with LocalWP. If Docker Desktop isn't running, the add-on surfaces "Docker not running" in the panel and does nothing.
+- **Docker running on your host machine.** Supported runtimes:
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+  - [Colima](https://github.com/abiosoft/colima#docker)
+
+  The add-on talks to your host's Docker daemon via the `docker` CLI — it does **not** spin up a Docker instance inside LocalWP, and it does not use any container runtime bundled with LocalWP. If Docker isn't running, the add-on surfaces "Docker not running" in the panel and does nothing.
+
+  If you have more than one runtime installed, make sure the active context points at the one you want before starting sites (e.g. `docker context use colima`).
 - Developed and tested on **macOS**. Linux/Windows paths and permission prompts are not covered here.
 
 ## First-run macOS permission prompt
