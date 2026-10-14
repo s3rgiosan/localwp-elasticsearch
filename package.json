@@ -1,7 +1,7 @@
 {
   "name": "localwp-elasticsearch",
   "productName": "Elasticsearch",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Runs a per-site Elasticsearch container on demand.",
   "main": "lib/main.js",
   "renderer": "lib/renderer.js",
@@ -15,8 +15,18 @@
     }
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/s3rgiosan/localwp-elasticsearch.git"
+  },
+  "homepage": "https://github.com/s3rgiosan/localwp-elasticsearch#readme",
+  "bugs": {
+    "url": "https://github.com/s3rgiosan/localwp-elasticsearch/issues"
+  },
   "scripts": {
-    "build": "tsc",
+    "clean": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc",
+    "prepare": "npm run build",
     "watch": "tsc --watch"
   },
   "devDependencies": {
@@ -29,7 +39,6 @@
   },
   "files": [
     "lib",
-    "docker",
     "icon.png"
   ]
 }
