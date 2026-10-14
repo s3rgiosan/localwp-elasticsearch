@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-10-14
+
+### Fixed
+
+- The Elasticsearch entry in the site's Tools tab shows its name again.
+- Each value and control in the panel lines up with its label, and banners appear below the control they belong to.
+
 ## [1.2.0] - 2026-10-14
 
 ### Added
@@ -98,7 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ES toggle is state-aware: turning it on with an existing container starts the container, turning it on with a missing container stores the setting and creates the container on next site start, and turning it off stops the container without removing it.
 - Container env flags are branched per major: `xpack.security.enabled=false` is only passed for ES 6+ (X-Pack was a separate plugin in 5.x).
 
-[Unreleased]: https://github.com/s3rgiosan/localwp-elasticsearch/compare/1.2.0...HEAD
+[Unreleased]: https://github.com/s3rgiosan/localwp-elasticsearch/compare/1.2.1...HEAD
+[1.2.1]: https://github.com/s3rgiosan/localwp-elasticsearch/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/s3rgiosan/localwp-elasticsearch/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/s3rgiosan/localwp-elasticsearch/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/s3rgiosan/localwp-elasticsearch/compare/1.0.0...1.0.1
