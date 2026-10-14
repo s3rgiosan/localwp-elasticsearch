@@ -36,13 +36,42 @@ const POLL_NOT_READY_MS = 2000;
 const POLL_READY_MS = 5000;
 const POLL_IDLE_MS = 10000;
 
+/** First line of a row's value, as tall as the row label so both share a center line. */
+const ROW_LINE: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, minHeight: 48 };
+
+const ROW_CLASS = 'LocalElasticsearch__Row';
+
+/**
+ * Top-aligns the value cell of each row. TableListRow cells align on the text
+ * baseline, which shifts rows whose first line holds a switch or a select.
+ */
+const ROW_CSS = `.TableListRow.${ROW_CLASS} > div { vertical-align: top; }`;
+
+function addRowStyles(): void {
+	if (document.getElementById(ROW_CLASS)) return;
+	const style = document.createElement('style');
+	style.id = ROW_CLASS;
+	style.textContent = ROW_CSS;
+	document.head.appendChild(style);
+}
+
+/** Banners below a row's first line. */
+const ROW_NOTICES: React.CSSProperties = {
+	display: 'flex',
+	flexDirection: 'column',
+	alignItems: 'flex-start',
+	gap: 8,
+	paddingBottom: 12,
+};
+
 type SiteProps = { id: string; name: string; [key: string]: any };
 
 function errorMessage(e: unknown): string {
 	return e instanceof Error ? e.message : String(e);
 }
 
-function ElasticsearchPanel({ site, electron }: { site: SiteProps; electron: any }) {
+/** `label` names the Tools tab entry; Local reads it from the element's props. */
+function ElasticsearchPanel({ site, electron }: { site: SiteProps; electron: any; label: string }) {
 	const ipc = electron.ipcRenderer;
 	const [enabled, setEnabled] = useState(false);
 	const [status, setStatus] = useState<Status>(DEFAULT_STATUS);
@@ -240,49 +269,53 @@ function ElasticsearchPanel({ site, electron }: { site: SiteProps; electron: any
 
 	return (
 		<>
-			<TableListRow alignMiddle key="elasticsearch" label="Elasticsearch">
-				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-					<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-						<Switch
-							key={`${enabled}-${switchEpoch}`}
-							tiny
-							flat
-							checked={enabled}
-							disabled={locked || dockerDown || busy}
-							onChange={onToggle}
-						/>
-						{showCreateHint && <Text size="caption">Container is created on next site start.</Text>}
-					</div>
-					{dockerDown && <Banner variant="warning">{dockerBanner}</Banner>}
-					{pollError && <Banner variant="error">{pollError}</Banner>}
-					{shownActionError && <Banner variant="error">{shownActionError}</Banner>}
-					{status.lastError && <Banner variant="error">{status.lastError}</Banner>}
+			<TableListRow className={ROW_CLASS} key="elasticsearch" label="Elasticsearch">
+				<div style={ROW_LINE}>
+					<Switch
+						key={`${enabled}-${switchEpoch}`}
+						tiny
+						flat
+						checked={enabled}
+						disabled={locked || dockerDown || busy}
+						onChange={onToggle}
+					/>
+					{showCreateHint && <Text size="caption">Container is created on next site start.</Text>}
 				</div>
-			</TableListRow>
-			<TableListRow key="elasticsearch-state" label="State">
-				<Text>{stateLabel}</Text>
-			</TableListRow>
-			<TableListRow key="elasticsearch-host" label="Host">
-				{enabled && status.ready && status.hostUri ? (
-					<Text style={{ userSelect: 'text', cursor: 'text' }}>{status.hostUri}</Text>
-				) : (
-					<Text>—</Text>
+				{(dockerDown || pollError || shownActionError || status.lastError) && (
+					<div style={ROW_NOTICES}>
+						{dockerDown && <Banner variant="warning">{dockerBanner}</Banner>}
+						{pollError && <Banner variant="error">{pollError}</Banner>}
+						{shownActionError && <Banner variant="error">{shownActionError}</Banner>}
+						{status.lastError && <Banner variant="error">{status.lastError}</Banner>}
+					</div>
 				)}
 			</TableListRow>
-			<TableListRow key="elasticsearch-version" label="Version">
-				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-					<div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-						<FlySelect
-							value={status.version || status.defaultVersion}
-							options={versionOptions}
-							disabled={
-								locked || dockerDown || !enabled || busy || !status.supportedVersions.length
-							}
-							onChange={onVersionChange}
-						/>
-						{showRestartHint && <Text size="caption">Applies on next site start</Text>}
-					</div>
-					{status.majorChangePending && (
+			<TableListRow className={ROW_CLASS} key="elasticsearch-state" label="State">
+				<div style={ROW_LINE}>
+					<Text>{stateLabel}</Text>
+				</div>
+			</TableListRow>
+			<TableListRow className={ROW_CLASS} key="elasticsearch-host" label="Host">
+				<div style={ROW_LINE}>
+					{enabled && status.ready && status.hostUri ? (
+						<Text style={{ userSelect: 'text', cursor: 'text' }}>{status.hostUri}</Text>
+					) : (
+						<Text>—</Text>
+					)}
+				</div>
+			</TableListRow>
+			<TableListRow className={ROW_CLASS} key="elasticsearch-version" label="Version">
+				<div style={ROW_LINE}>
+					<FlySelect
+						value={status.version || status.defaultVersion}
+						options={versionOptions}
+						disabled={locked || dockerDown || !enabled || busy || !status.supportedVersions.length}
+						onChange={onVersionChange}
+					/>
+					{showRestartHint && <Text size="caption">Applies on next site start</Text>}
+				</div>
+				{status.majorChangePending && (
+					<div style={ROW_NOTICES}>
 						<Banner variant="warning">
 							<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
 								<Text>
@@ -297,27 +330,31 @@ function ElasticsearchPanel({ site, electron }: { site: SiteProps; electron: any
 								</Button>
 							</div>
 						</Banner>
-					)}
-				</div>
+					</div>
+				)}
 			</TableListRow>
 			{overThreshold && (
-				<TableListRow key="elasticsearch-ram" label="Memory">
-					<Banner variant="warning">
-						{status.runningCount} ES instances running (~{status.runningCount * status.ramPerInstanceMb}MB
-						RAM)
-					</Banner>
+				<TableListRow className={ROW_CLASS} key="elasticsearch-ram" label="Memory">
+					<div style={ROW_LINE}>
+						<Banner variant="warning">
+							{status.runningCount} ES instances running (~{status.runningCount * status.ramPerInstanceMb}MB
+							RAM)
+						</Banner>
+					</div>
 				</TableListRow>
 			)}
-			<TableListRow key="elasticsearch-ep" label="ElasticPress">
-				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+			<TableListRow className={ROW_CLASS} key="elasticsearch-ep" label="ElasticPress">
+				<div style={ROW_LINE}>
 					<Switch key={`${epOn}-${switchEpoch}`} tiny flat checked={epOn} disabled={epDisabled} onChange={onEpToggle} />
-					{status.epForeign && (
+				</div>
+				{status.epForeign && (
+					<div style={ROW_NOTICES}>
 						<Banner variant="warning">
 							EP_HOST is also defined in wp-config.php ({status.epForeign}). Turning ElasticPress on
 							comments it out; turning it off restores it.
 						</Banner>
-					)}
-				</div>
+					</div>
+				)}
 			</TableListRow>
 			<FlyModal
 				contentLabel="Delete Elasticsearch data and recreate"
@@ -345,7 +382,8 @@ function ElasticsearchPanel({ site, electron }: { site: SiteProps; electron: any
 export default function (context: any): void {
 	const { hooks, electron } = context;
 	if (!hooks?.addContent) return;
+	addRowStyles();
 	hooks.addContent('siteInfoUtilities', (site: SiteProps) => (
-		<ElasticsearchPanel key={site.id} site={site} electron={electron} />
+		<ElasticsearchPanel key={site.id} label="Elasticsearch" site={site} electron={electron} />
 	));
 }
